@@ -758,23 +758,21 @@
       getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc,
       deleteDoc, onSnapshot, query, where, getDocs
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import {
-      getStorage, ref, uploadBytes, getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    
 
     // ─── FIREBASE CONFIG ───
     const fallbackConfig = {
-      apiKey: "AIzaSyBtqjyZSYvNlZ114JfjCAYP7vftQb7xxHw",
-      authDomain: "mess-6e28d.firebaseapp.com",
-      projectId: "mess-6e28d"
-    };
+  apiKey: "AIzaSyBtqjyZSYvNlZ114JfjCAYP7vftQb7xxHw",
+  authDomain: "mess-6e28d.firebaseapp.com",
+  projectId: "mess-6e28d",
+  storageBucket: "mess-6e28d.appspot.com"   // ← стандартный bucket для Firebase
+};
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'mess-6e28d';
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
-    const storage = getStorage(app);
 
     // ─── FCM SETUP ───
     // ⚠️  Чтобы включить фоновые пуш-уведомления:
@@ -923,15 +921,16 @@ let msgRenderTimeout = null;
     const getInitials = (name) => name ? name.substring(0, 2).toUpperCase() : '??';
 
     const renderAvatar = (el, name, photoUrl) => {
-      if (!el) return;
-      if (photoUrl && photoUrl.startsWith('http')) {
-        el.style.background = `url(${photoUrl}) center/cover`;
-        el.textContent = '';
-      } else {
-        el.style.background = getColors(name || 'default');
-        el.textContent = getInitials(name);
-      }
-    };
+  if (!el) return;
+  // Поддерживаем и http-ссылки, и data:image (base64)
+  if (photoUrl && (photoUrl.startsWith('http') || photoUrl.startsWith('data:image'))) {
+    el.style.background = `url(${photoUrl}) center/cover`;
+    el.textContent = '';
+  } else {
+    el.style.background = getColors(name || 'default');
+    el.textContent = getInitials(name);
+  }
+};
 
     const formatTime = (ts) => {
       if (!ts) return '';
@@ -2173,33 +2172,37 @@ window.toggleVoicePlay = (uid) => {
     };
 
     window.saveSettings = async () => {
-      if (!currentUser) return;
-      const name = document.getElementById('setDisplayName').value.trim();
-      const bio  = document.getElementById('setBio').value.trim();
-      const photoFile = document.getElementById('setPhotoFile').files[0];
-      if (!name) return showToast('Имя не может быть пустым', 'error');
-      
+  if (!currentUser) return;
+  const name = document.getElementById('setDisplayName').value.trim();
+  const bio  = document.getElementById('setBio').value.trim();
+  const photoFile = document.getElementById('setPhotoFile').files[0];
+  if (!name) return showToast('Имя не может быть пустым', 'error');
+  
+  try {
+    let photoUrl = usersCache[currentUser.uid]?.photoUrl || '';
+    
+    // Если выбран новый файл, сжимаем в base64
+    if (photoFile) {
+      showToast('Сжатие и загрузка фото...');
       try {
-        let photoUrl = usersCache[currentUser.uid]?.photoUrl || '';
-        
-        // Если выбран новый файл, загружаем его
-        if (photoFile) {
-          showToast('Загружаем фото...');
-          const storageRef = ref(storage, `avatars/${currentUser.uid}-${Date.now()}`);
-          const snapshot = await uploadBytes(storageRef, photoFile);
-          photoUrl = await getDownloadURL(snapshot.ref);
-        }
-        
-        const updateData = { displayName: name, bio };
-        if (photoUrl) updateData.photoUrl = photoUrl;
-        
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), updateData);
-        showToast('Профиль обновлён'); closeModal('settingsModal');
-      } catch (e) { 
-        console.error(e);
-        showToast('Ошибка сохранения: ' + e.message, 'error'); 
+        // maxW=200, quality=0.7 – достаточно для аватарки и мало весит
+        photoUrl = await resizeImageToBase64(photoFile, 200, 0.7);
+      } catch (err) {
+        showToast('Не удалось обработать фото', 'error');
+        return;
       }
-    };
+    }
+    
+    const updateData = { displayName: name, bio };
+    if (photoUrl) updateData.photoUrl = photoUrl;
+    
+    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), updateData);
+    showToast('Профиль обновлён'); closeModal('settingsModal');
+  } catch (e) { 
+    console.error(e);
+    showToast('Ошибка сохранения: ' + e.message, 'error'); 
+  }
+};
 
     document.getElementById('setPhotoFile').addEventListener('change', function () {
       if (this.files && this.files[0]) {
