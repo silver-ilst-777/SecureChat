@@ -25,6 +25,8 @@ messaging.onBackgroundMessage((payload) => {
   const body = payload.data?.body || payload.notification?.body || '';
   const chatId = payload.data?.chatId;
 
+  console.log(`[SW] Показываем уведомление: "${title}" - "${body}". ChatId: ${chatId}`);
+
   return self.registration.showNotification(title, {
     body,
     icon: iconUrl,
@@ -32,22 +34,31 @@ messaging.onBackgroundMessage((payload) => {
     data: { chatId },
     vibrate: [200, 100, 200],
     tag: chatId || 'securechat',
-    renotify: true
+    renotify: true,
+    requireInteraction: false
   });
 });
 
 self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Клик по уведомлению:', event.notification.data);
   event.notification.close();
   const chatId = event.notification.data?.chatId;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      console.log(`[SW] Найдено ${windowClients.length} окон клиента`);
+      
+      // Ищем окно нашего приложения
       for (const client of windowClients) {
         if (client.url.includes(self.registration.scope) && 'focus' in client) {
+          console.log(`[SW] Отправляем сообщение в существующее окно, chatId=${chatId}`);
           client.postMessage({ type: 'OPEN_CHAT', chatId });
           return client.focus();
         }
       }
+      
+      // Если окна не найдены, открываем новое
+      console.log(`[SW] Открываем новое окно, chatId=${chatId}`);
       if (clients.openWindow) {
         const url = chatId ? `/?chat=${chatId}` : '/';
         return clients.openWindow(url);

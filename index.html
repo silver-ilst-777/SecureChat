@@ -47,7 +47,10 @@
   color: var(--text);
   font-family: var(--font-main);
   overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0px);   /* ← новая строка */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
     button { font-family: var(--font-main); cursor: pointer; border: none; background: none; color: inherit; }
     input, textarea { font-family: var(--font-main); outline: none; }
@@ -98,7 +101,7 @@
     }
 
     /* ── Toast ── */
-    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    #toast-container { position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
     .toast {
       background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 14px 20px;
       border-radius: 14px; display: flex; align-items: center; gap: 12px;
@@ -114,7 +117,7 @@
     #notifBanner {
       display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 8000;
       background: linear-gradient(135deg, rgba(212,175,55,0.95), rgba(255,215,0,0.9));
-      padding: 12px 20px; align-items: center; gap: 12px;
+      padding: calc(12px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) 12px calc(20px + env(safe-area-inset-left, 0px)); align-items: center; gap: 12px;
       backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
     #notifBanner.show { display: flex; animation: slideDown 0.4s ease; }
@@ -130,7 +133,7 @@
     .notif-later-btn:hover { color: #000; }
 
     /* ── Auth ── */
-    #authScreen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.5s; height: 100%; height: 100dvh; }
+    #authScreen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: calc(20px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px)); transition: opacity 0.5s; height: 100%; height: 100dvh; }
     #authScreen.hidden { opacity: 0; pointer-events: none; }
 
     .auth-card {
@@ -160,7 +163,7 @@
 
     #sidebar { width: 340px; background: var(--sb); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 5px 0 30px rgba(0,0,0,0.4); }
 
-    .sb-header { padding: 16px 16px 12px; display: flex; align-items: center; justify-content: space-between; }
+    .sb-header { padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-left, 0px)) 12px 16px; display: flex; align-items: center; justify-content: space-between; }
     .brand-wrap { display: flex; align-items: center; gap: 12px; }
     .brand-icon { width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #D4AF37, #FFD700); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
     .brand-text { font-family: var(--font-head); font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; color: #D4AF37; }
@@ -222,7 +225,7 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-    .chat-header { padding: 16px 24px; background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; z-index: 5; position: relative; box-shadow: 0 4px 30px rgba(0,0,0,0.3); }
+    .chat-header { padding: calc(16px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) 16px calc(24px + env(safe-area-inset-left, 0px)); background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; z-index: 5; position: relative; box-shadow: 0 4px 30px rgba(0,0,0,0.3); }
     #mobileBackBtn { display: none; }
     .chat-header-av { width: 46px; height: 46px; font-size: 18px; position: relative; }
     .chat-header-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
@@ -238,7 +241,7 @@
 
     /* ── Message search panel ── */
     #searchPanel {
-      display: none; align-items: center; gap: 10px; padding: 10px 20px;
+      display: none; align-items: center; gap: 10px; padding: 10px calc(20px + env(safe-area-inset-right, 0px)) 10px calc(20px + env(safe-area-inset-left, 0px));
       background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border); z-index: 4;
     }
@@ -364,7 +367,7 @@
     .voice-rec-btn.send:hover { transform: scale(1.1); }
 
     /* ── Input area ── */
-    .chat-input-area { padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-end; z-index: 5; flex-direction: column; }
+    .chat-input-area { padding: 8px calc(12px + env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px)); background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-end; z-index: 5; flex-direction: column; }
     .chat-input-row { display: flex; gap: 8px; align-items: flex-end; width: 100%; }
     #msgInput {
   flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
@@ -419,8 +422,8 @@
       #sidebar.hidden-mobile { transform: translateX(-100%); }
       #mobileBackBtn { display: flex; margin-right: 12px; }
       .msg-block { max-width: 92%; }
-      .chat-header { padding: 12px 16px; }
-      .chat-input-area { padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+      .chat-header { padding: calc(12px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 12px calc(16px + env(safe-area-inset-left, 0px)); }
+      .chat-input-area { padding: 12px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
       .auth-card { padding: 28px 20px; border-radius: 24px; }
       .auth-title { font-size: 1.7rem; }
       #msgInput { min-height: 48px; padding: 12px 16px; font-size: 0.95rem; }
@@ -778,29 +781,70 @@
     let fcmMessaging = null;
 
     const initFCM = async () => {
-      if (!currentUser) return;
-      if (!('serviceWorker' in navigator)) return;
+      if (!currentUser) {
+        console.log('[FCM] Пользователь не auth');
+        return;
+      }
+      if (!('serviceWorker' in navigator)) {
+        console.log('[FCM] ServiceWorker не поддерживается');
+        return;
+      }
+      if (Notification.permission !== 'granted') {
+        console.log('[FCM] Разрешение на уведомления не дано');
+        return;
+      }
       try {
+        console.log('[FCM] Инициализация FCM...');
         const { getMessaging, getToken, onMessage } = await import(
           'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js'
         );
         fcmMessaging = getMessaging(app);
+        console.log('[FCM] Messaging инициализирован');
 
-        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        const token = await getToken(fcmMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+        // Регистрируем Service Worker
+        let swReg;
+        try {
+          swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          console.log('[FCM] SW зарегистрирован:', swReg);
+        } catch (swErr) {
+          console.error('[FCM] Ошибка регистрации SW:', swErr);
+          return;
+        }
+
+        // Получаем токен
+        const token = await getToken(fcmMessaging, { 
+          vapidKey: VAPID_KEY, 
+          serviceWorkerRegistration: swReg 
+        });
 
         if (token) {
-          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), { fcmToken: token });
-          console.log('[FCM] Токен сохранён:', token);
+          console.log('[FCM] Токен получен:', token.substring(0, 20) + '...');
+          // Сохраняем token в Firestore
+          try {
+            await updateDoc(
+              doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), 
+              { 
+                fcmToken: token,
+                fcmTokenUpdated: new Date().toISOString()
+              }
+            );
+            console.log('[FCM] Токен успешно сохранён в Firestore');
+            showToast('Push-уведомления включены! 🔔');
+          } catch (updateErr) {
+            console.error('[FCM] Ошибка сохранения токена:', updateErr);
+          }
+        } else {
+          console.warn('[FCM] Токен не получен');
         }
 
         // Уведомления когда приложение на переднем плане
         onMessage(fcmMessaging, (payload) => {
+          console.log('[FCM] Foreground message:', payload);
           const d = payload.data || {};
           showBrowserNotification(d.title || 'SecureChat Pro', d.body || 'Новое сообщение', d.chatId);
         });
       } catch (err) {
-        console.warn('[FCM] Инициализация пропущена:', err.message);
+        console.error('[FCM] Ошибка инициализации:', err.message, err);
       }
     };
 
@@ -919,29 +963,67 @@ let msgRenderTimeout = null;
     };
 
     window.requestNotifPermission = async () => {
-      if (!('Notification' in window)) { showToast('Ваш браузер не поддерживает уведомления', 'error'); return; }
-      if (Notification.permission === 'granted') { showToast('Уведомления уже включены ✓'); dismissNotifBanner(); return; }
+      if (!('Notification' in window)) { 
+        showToast('Ваш браузер не поддерживает уведомления', 'error'); 
+        return; 
+      }
+      if (Notification.permission === 'granted') { 
+        showToast('Уведомления уже включены ✓'); 
+        dismissNotifBanner(); 
+        // Попробуем инициализировать FCM, если еще не инициализировали
+        if (currentUser) initFCM();
+        return; 
+      }
+      
+      console.log('[Notif] Запрашиваем разрешение на уведомления...');
       const perm = await Notification.requestPermission();
+      console.log('[Notif] Результат запроса:', perm);
       updateNotifStatusText();
+      
       if (perm === 'granted') {
         showToast('Уведомления включены! 🎉');
         dismissNotifBanner();
-        initFCM();
-      } else {
-        showToast('Уведомления отклонены. Включите в настройках браузера.', 'error');
+        const VAPID_KEY = 'BK_xXjnvKgEwaUFI7M4Rtza6Y9TvrQyqBLiMIAejOzD1idj5YXk_ihoytFx0HFR-9zU3ji8PIxkbxXmGv3_tOnM';        // Инициализируем FCM с новым разрешением
+        if (currentUser) {
+          console.log('[Notif] Инициализируем FCM после получения разрешения');
+          initFCM();
+        }
+      } else if (perm === 'denied') {
+        showToast('Уведомления заблокированы. Включите в настройках браузера.', 'error');
       }
     };
 
     window.dismissNotifBanner = () => {
-      document.getElementById('notifBanner').classList.remove('show');
-      localStorage.setItem('notifBannerDismissed', '1');
+      const banner = document.getElementById('notifBanner');
+      if (banner) banner.classList.remove('show');
+      // Не сохраняем на всегда - баннер должен появиться при следующем входе
+      // localStorage.setItem('notifBannerDismissed', '1');
+      console.log('[Notif] Баннер закрыт');
     };
 
     const maybeShowNotifBanner = () => {
-      if (!('Notification' in window)) return;
-      if (Notification.permission === 'granted') return;
-      if (localStorage.getItem('notifBannerDismissed')) return;
-      setTimeout(() => document.getElementById('notifBanner').classList.add('show'), 2000);
+      if (!('Notification' in window)) {
+        console.log('[Notif] Уведомления не поддерживаются браузером');
+        return;
+      }
+      console.log('[Notif] Permission status:', Notification.permission);
+      if (Notification.permission === 'granted') {
+        console.log('[Notif] Уведомления уже разрешены');
+        return;
+      }
+      if (Notification.permission === 'denied') {
+        console.log('[Notif] Уведомления заблокированы пользователем');
+        return;
+      }
+      // Показываем баннер для запроса разрешения
+      console.log('[Notif] Показываем баннер для запроса разрешения');
+      setTimeout(() => {
+        const banner = document.getElementById('notifBanner');
+        if (banner && !banner.classList.contains('show')) {
+          console.log('[Notif] Banner shown');
+          banner.classList.add('show');
+        }
+      }, 1000);
     };
 
     const playNotificationSound = () => {
@@ -1048,6 +1130,10 @@ let msgRenderTimeout = null;
     });
 
     initEnvAuth();
+    
+    // Покажем баннер при загрузке страницы
+    maybeShowNotifBanner();
+    updateNotifStatusText();
 
     window.toggleAuthMode = (isReg) => {
       document.getElementById('authCard').classList.toggle('is-registering', isReg);
