@@ -416,6 +416,36 @@
     .forward-chat-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
     .forward-chat-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(212,175,55,0.15); }
 
+        /* ── User profile modal ── */
+    #userProfileModal .modal-box { max-width: 480px; }
+    .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 35%; font-size: 36px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border: 2px solid rgba(212,175,55,0.4); }
+    .profile-name { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .profile-bio { font-size: 0.9rem; color: var(--text-dim); max-width: 280px; word-break: break-word; }
+    .profile-status { font-size: 0.85rem; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+    .profile-status.online { color: var(--accent2); }
+    .profile-status.offline { color: var(--text-xs); }
+
+    .profile-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 16px; border: 1px solid var(--border); }
+    .profile-tab { flex: 1; text-align: center; padding: 8px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+    .profile-tab.active { background: rgba(212,175,55,0.15); color: var(--text); }
+
+    .profile-tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .profile-tab-content.active { display: block; }
+
+    .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 300px; overflow-y: auto; padding-right: 6px; }
+    .media-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: pointer; transition: opacity 0.2s; border: 1px solid var(--border); background: var(--surface2); }
+    .media-thumb:hover { opacity: 0.8; }
+    .no-media-text { text-align: center; color: var(--text-xs); font-size: 0.85rem; padding: 20px; }
+
+    .voice-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 6px; }
+    .voice-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; cursor: pointer; transition: background 0.2s; }
+    .voice-item:hover { background: rgba(255,255,255,0.06); }
+    .voice-item .voice-play-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; color: #1a1a1a; flex-shrink: 0; transition: all 0.2s; }
+    .voice-item .voice-play-btn.playing { background: var(--danger); color: #fff; }
+    .voice-item .voice-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .voice-item .voice-duration { font-size: 0.75rem; color: var(--text-xs); margin-left: auto; }
+
     /* ── Mobile ── */
     @media (max-width: 768px) {
       #sidebar { position: absolute; inset: 0; width: 100%; transform: translateX(0); z-index: 20; }
@@ -426,8 +456,26 @@
       .chat-input-area { padding: 12px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
       .auth-card { padding: 28px 20px; border-radius: 24px; }
       .auth-title { font-size: 1.7rem; }
-      #msgInput { min-height: 48px; padding: 12px 16px; font-size: 0.95rem; }
-      #sendBtn, #voiceBtn, #imgBtn { width: 48px; height: 48px; border-radius: 16px; }
+            .chat-input-area { 
+        padding: 8px calc(10px + env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) calc(10px + env(safe-area-inset-left, 0px)); 
+      }
+      .chat-input-row { gap: 6px; }
+      .input-actions { gap: 6px; }
+      #msgInput { 
+        min-height: 40px; 
+        padding: 8px 12px; 
+        font-size: 0.9rem; 
+        border-radius: 20px; 
+      }
+      #sendBtn, #voiceBtn, #imgBtn { 
+        width: 38px; 
+        height: 38px; 
+        border-radius: 12px; 
+      }
+      #sendBtn svg, #voiceBtn svg, #imgBtn svg { 
+        width: 18px; 
+        height: 18px; 
+      }
       .notif-banner-text { font-size: 0.8rem; }
     }
   </style>
@@ -705,6 +753,42 @@
         </button>
       </div>
       <div class="forward-chat-list" id="forwardChatList"></div>
+    </div>
+  </div>
+
+    <!-- User Profile Modal -->
+  <div class="modal-overlay" id="userProfileModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Профиль</div>
+        <button class="modal-close" onclick="closeModal('userProfileModal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="profile-header">
+        <div class="avatar profile-avatar" id="profileAvatar"></div>
+        <div>
+          <div class="profile-name" id="profileName"></div>
+          <div class="profile-bio" id="profileBio"></div>
+          <div class="profile-status" id="profileStatus"></div>
+        </div>
+      </div>
+
+      <div class="profile-tabs">
+        <div class="profile-tab active" data-tab="media">📷 Медиа</div>
+        <div class="profile-tab" data-tab="voice">🎤 Голосовые</div>
+      </div>
+
+      <div class="profile-tab-content active" id="tab-media">
+        <div class="media-grid" id="mediaGrid"></div>
+        <div class="no-media-text" id="noMediaText" style="display:none;">Нет изображений</div>
+      </div>
+
+      <div class="profile-tab-content" id="tab-voice">
+        <div class="voice-list" id="voiceList"></div>
+        <div class="no-media-text" id="noVoiceText" style="display:none;">Нет голосовых сообщений</div>
+      </div>
     </div>
   </div>
 
@@ -1180,6 +1264,7 @@ let msgRenderTimeout = null;
       try {
         await setOnlineStatus(false);
         closeModal('settingsModal');
+              closeModal('userProfileModal');
         currentChatId = null; editingMessageId = null; replyingToMessage = null;
         cachedMessages = []; isFirstMessageLoad = true; knownMessageIds.clear(); unreadCounts = {};
         await signOut(auth);
@@ -1249,10 +1334,7 @@ let msgRenderTimeout = null;
       if (chat.type === 'direct') {
         const otherId = chat.participants.find(p => p !== currentUser.uid) || currentUser.uid;
         const other = usersCache[otherId] || { displayName: 'Неизвестный', isOnline: false };
-        let sub = other.isOnline ? '🟢 В сети' : (other.lastSeen ? `Был(а) ${formatDate(other.lastSeen)} в ${formatTime(other.lastSeen)}` : '⚪ Не в сети');
-        if (other.bio) {
-          sub = (other.bio || '') + ' · ' + sub;
-        }
+                let sub = other.isOnline ? '🟢 В сети' : (other.lastSeen ? `Был(а) ${formatDate(other.lastSeen)} в ${formatTime(other.lastSeen)}` : '⚪ Не в сети');
         return {
           name: other.displayName, photoUrl: other.photoUrl,
           sub: sub,
@@ -1352,6 +1434,7 @@ let msgRenderTimeout = null;
 
     window.selectChat = (chatId) => {
       if (!currentUser) return;
+            closeModal('userProfileModal'); // закрываем профиль, если был открыт
       currentChatId = chatId;
       isFirstMessageLoad = true;
       cachedMessages = [];
@@ -1377,6 +1460,15 @@ let msgRenderTimeout = null;
       statusEl.textContent = det.sub;
       statusEl.style.color = det.isOnline ? 'var(--accent2)' : 'var(--text-dim)';
       renderAvatar(document.getElementById('activeChatAv'), det.name, det.photoUrl);
+            const avEl = document.getElementById('activeChatAv');
+      // Для прямого чата открываем профиль собеседника, для группы показываем сообщение
+      if (chat.type === 'direct') {
+        avEl.style.cursor = 'pointer';
+        avEl.onclick = () => openUserProfile(det.otherId);
+      } else {
+        // В группе можно показывать информацию о группе, или заглушку
+        avEl.onclick = () => showToast('Это группа. Профиль участников пока не доступен.', 'success');
+      }
       updateTypingIndicator(chat);
     };
 
@@ -2007,12 +2099,14 @@ const renderVoiceMessage = (voiceData, msgId) => {
 
 window.toggleVoicePlay = (uid) => {
   const audio = document.getElementById(`vaudio-${uid}`);
-  const btn   = document.getElementById(`vpbtn-${uid}`);
-  const play  = document.getElementById(`vplay-${uid}`);
+  const btn = document.getElementById(`vpbtn-${uid}`);
+  const play = document.getElementById(`vplay-${uid}`);
   const pause = document.getElementById(`vpause-${uid}`);
   if (!audio || !btn) return;
   if (audio.paused) {
+    // Останавливаем все другие аудио
     document.querySelectorAll('audio').forEach(a => { if (a !== audio && !a.paused) { a.pause(); a.currentTime = 0; } });
+    // Сбрасываем все кнопки на "play"
     document.querySelectorAll('.voice-play-btn').forEach(b => {
       if (b !== btn) { b.classList.remove('playing'); const id = b.id.replace('vpbtn-',''); const pi = document.getElementById(`vplay-${id}`); const pau = document.getElementById(`vpause-${id}`); if (pi) pi.style.display='block'; if (pau) pau.style.display='none'; }
     });
@@ -2224,6 +2318,99 @@ window.toggleVoicePlay = (uid) => {
   renderAvatar(document.getElementById('chatInfoAv'), det.name, det.photoUrl);
   openModal('chatInfoModal');
 };
+    // ─── USER PROFILE ───
+    // Переключение вкладок внутри модалки
+    document.querySelector('#userProfileModal .profile-tabs').addEventListener('click', function(e) {
+      if (e.target.classList.contains('profile-tab')) {
+        document.querySelectorAll('#userProfileModal .profile-tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        const tabName = e.target.dataset.tab;
+        document.querySelectorAll('#userProfileModal .profile-tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+      }
+    });
+
+    // Открыть профиль пользователя
+    window.openUserProfile = (uid) => {
+      if (!uid) return;
+      const user = usersCache[uid];
+      if (!user) return showToast('Пользователь не найден', 'error');
+
+      // Заполняем информацию
+      document.getElementById('profileName').textContent = user.displayName || 'Неизвестный';
+      document.getElementById('profileBio').textContent = user.bio || 'Биография отсутствует';
+      renderAvatar(document.getElementById('profileAvatar'), user.displayName, user.photoUrl);
+
+      const statusEl = document.getElementById('profileStatus');
+      if (user.isOnline) {
+        statusEl.innerHTML = '<span style="color:var(--accent2);">🟢 В сети</span>';
+        statusEl.className = 'profile-status online';
+      } else {
+        const lastSeen = user.lastSeen ? `Был(а) ${formatDate(user.lastSeen)} в ${formatTime(user.lastSeen)}` : 'Давно не заходил';
+        statusEl.innerHTML = `⚪ ${escapeHTML(lastSeen)}`;
+        statusEl.className = 'profile-status offline';
+      }
+
+      // Фильтруем сообщения текущего чата от этого пользователя
+      const msgs = cachedMessages.filter(m => m.senderId === uid);
+
+      // Вкладка Медиа (только изображения)
+      const imageMsgs = msgs.filter(m => m.imageMessage);
+      const mediaGrid = document.getElementById('mediaGrid');
+      const noMediaText = document.getElementById('noMediaText');
+      mediaGrid.innerHTML = '';
+      if (imageMsgs.length) {
+        noMediaText.style.display = 'none';
+        const sortedImages = imageMsgs.sort((a, b) => b.ts - a.ts);
+        sortedImages.forEach(msg => {
+          const img = document.createElement('img');
+          img.src = msg.imageMessage.data;
+          img.className = 'media-thumb';
+          img.onclick = () => { document.getElementById('lightboxImg').src = msg.imageMessage.data; document.getElementById('imgLightbox').classList.add('show'); };
+          mediaGrid.appendChild(img);
+        });
+      } else {
+        noMediaText.style.display = 'block';
+      }
+
+      // Вкладка Голосовые
+      const voiceMsgs = msgs.filter(m => m.voiceMessage);
+      const voiceList = document.getElementById('voiceList');
+      const noVoiceText = document.getElementById('noVoiceText');
+      voiceList.innerHTML = '';
+      if (voiceMsgs.length) {
+        noVoiceText.style.display = 'none';
+        const sortedVoice = voiceMsgs.sort((a, b) => b.ts - a.ts);
+        sortedVoice.forEach(msg => {
+          const uidV = `vp-modal-${msg.id}`;
+          const dur = formatDuration(msg.voiceMessage.duration || 0);
+          const item = document.createElement('div');
+          item.className = 'voice-item';
+          item.innerHTML = `
+            <button class="voice-play-btn" id="vpbtn-modal-${uidV}" onclick="toggleVoicePlay('${uidV}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" id="vplay-modal-${uidV}"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" id="vpause-modal-${uidV}" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="voice-name">Голосовое сообщение</div>
+            <div class="voice-duration">${dur}</div>
+            <audio id="vaudio-modal-${uidV}" src="${msg.voiceMessage.audio}" style="display:none;" preload="none"></audio>
+          `;
+          voiceList.appendChild(item);
+        });
+      } else {
+        noVoiceText.style.display = 'block';
+      }
+
+      // Сбрасываем вкладку на "Медиа" при открытии
+      document.querySelectorAll('#userProfileModal .profile-tab').forEach(t => t.classList.remove('active'));
+      const mediaTab = document.querySelector('#userProfileModal .profile-tab[data-tab="media"]');
+      if (mediaTab) mediaTab.classList.add('active');
+      document.querySelectorAll('#userProfileModal .profile-tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-media').classList.add('active');
+
+      openModal('userProfileModal');
+    };
   </script>
   <script src="theme-manager.js"></script>
 </body>
