@@ -678,8 +678,9 @@
         <input type="text" id="setBio" class="input-field" placeholder="Расскажите немного о себе">
       </div>
       <div class="field-group">
-        <label>URL Аватарки</label>
-        <input type="url" id="setPhotoUrl" class="input-field" placeholder="https://...">
+        <label>Аватарка</label>
+        <input type="file" id="setPhotoFile" class="input-field" accept="image/*" style="padding:10px;cursor:pointer;">
+        <small style="color:var(--text-xs);margin-top:-6px;">Выберите изображение со своего устройства</small>
       </div>
       <div class="field-group">
         <label>Уведомления</label>
@@ -757,6 +758,9 @@
       getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc,
       deleteDoc, onSnapshot, query, where, getDocs
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getStorage, ref, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     // ─── FIREBASE CONFIG ───
     const fallbackConfig = {
@@ -770,6 +774,7 @@
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
+    const storage = getStorage(app);
 
     // ─── FCM SETUP ───
     // ⚠️  Чтобы включить фоновые пуш-уведомления:
@@ -1245,10 +1250,14 @@ let msgRenderTimeout = null;
       if (chat.type === 'direct') {
         const otherId = chat.participants.find(p => p !== currentUser.uid) || currentUser.uid;
         const other = usersCache[otherId] || { displayName: 'Неизвестный', isOnline: false };
+        let sub = other.isOnline ? '🟢 В сети' : (other.lastSeen ? `Был(а) ${formatDate(other.lastSeen)} в ${formatTime(other.lastSeen)}` : '⚪ Не в сети');
+        if (other.bio) {
+          sub = (other.bio || '') + ' · ' + sub;
+        }
         return {
           name: other.displayName, photoUrl: other.photoUrl,
-          sub: other.isOnline ? 'В сети' : (other.lastSeen ? `Был(а) ${formatDate(other.lastSeen)} в ${formatTime(other.lastSeen)}` : 'Не в сети'),
-          isOnline: other.isOnline, otherId
+          sub: sub,
+          isOnline: other.isOnline, otherId, bio: other.bio
         };
       }
       return { name: chat.name || 'Группа', photoUrl: null, sub: `${chat.participants.length} участников`, isOnline: false };
@@ -2108,7 +2117,7 @@ window.toggleVoicePlay = (uid) => {
         const me = usersCache[currentUser.uid];
         document.getElementById('setDisplayName').value = me.displayName || '';
         document.getElementById('setBio').value = me.bio || '';
-        document.getElementById('setPhotoUrl').value = me.photoUrl || '';
+        document.getElementById('setPhotoFile').value = '';
         renderAvatar(document.getElementById('settingsAv'), me.displayName, me.photoUrl);
         updateNotifStatusText();
       }
@@ -2167,16 +2176,39 @@ window.toggleVoicePlay = (uid) => {
       if (!currentUser) return;
       const name = document.getElementById('setDisplayName').value.trim();
       const bio  = document.getElementById('setBio').value.trim();
-      const url  = document.getElementById('setPhotoUrl').value.trim();
+      const photoFile = document.getElementById('setPhotoFile').files[0];
       if (!name) return showToast('Имя не может быть пустым', 'error');
+      
       try {
-        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), { displayName: name, bio, photoUrl: url });
+        let photoUrl = usersCache[currentUser.uid]?.photoUrl || '';
+        
+        // Если выбран новый файл, загружаем его
+        if (photoFile) {
+          showToast('Загружаем фото...');
+          const storageRef = ref(storage, `avatars/${currentUser.uid}-${Date.now()}`);
+          const snapshot = await uploadBytes(storageRef, photoFile);
+          photoUrl = await getDownloadURL(snapshot.ref);
+        }
+        
+        const updateData = { displayName: name, bio };
+        if (photoUrl) updateData.photoUrl = photoUrl;
+        
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid), updateData);
         showToast('Профиль обновлён'); closeModal('settingsModal');
-      } catch (e) { showToast('Ошибка сохранения', 'error'); }
+      } catch (e) { 
+        console.error(e);
+        showToast('Ошибка сохранения: ' + e.message, 'error'); 
+      }
     };
 
-    document.getElementById('setPhotoUrl').addEventListener('input', function () {
-      renderAvatar(document.getElementById('settingsAv'), document.getElementById('setDisplayName').value || 'User', this.value.trim());
+    document.getElementById('setPhotoFile').addEventListener('change', function () {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          renderAvatar(document.getElementById('settingsAv'), document.getElementById('setDisplayName').value || 'User', e.target.result);
+        };
+        reader.readAsDataURL(this.files[0]);
+      }
     });
 
     window.showChatInfo = () => {
